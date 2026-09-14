@@ -15,14 +15,19 @@ const geistMono = Geist_Mono({
 });
 
 export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getAllSettings();
-  const brandName = settings.company_name?.trim() || settings.brand_name || "PalpiAuto";
-  // On ignore les vieux favicons en base64 (lourds, cassent le <head>) : re-upload requis.
-  const faviconRaw = settings.favicon_url?.trim();
-  const icons =
-    faviconRaw && !faviconRaw.startsWith("data:")
-      ? { icon: [{ url: faviconRaw }] }
-      : undefined;
+  let brandName = "PalpiAuto";
+  let icons: Metadata["icons"];
+  try {
+    const settings = await getAllSettings();
+    brandName = settings.company_name?.trim() || settings.brand_name || "PalpiAuto";
+    // On ignore les vieux favicons en base64 (lourds, cassent le <head>) : re-upload requis.
+    const faviconRaw = settings.favicon_url?.trim();
+    if (faviconRaw && !faviconRaw.startsWith("data:")) {
+      icons = { icon: [{ url: faviconRaw }] };
+    }
+  } catch {
+    // Build sans base (ex : DATABASE_URL locale absente) : métadonnées par défaut.
+  }
   return {
     title: `${brandName} — Commandez votre pièce détachée`,
     description: `${brandName} à Palaiseau : demandez votre pièce détachée auto. Réponse rapide par téléphone ou WhatsApp.`,

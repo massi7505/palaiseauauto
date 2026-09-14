@@ -8,6 +8,10 @@ const DEFAULT_SETTINGS: Array<[string, string]> = [
   ["address", "5 Av. du Général de Gaulle, 91120 Palaiseau"],
   ["garage_phone", "06 01 63 99 59"],
   ["whatsapp_phone", "33601639959"],
+  ["accent_color", "#b91c1c"],
+  ["recaptcha_site_key", ""],
+  ["recaptcha_secret_key", ""],
+  ["recaptcha_enabled", "false"],
   ["opening_hours_json", JSON.stringify({
     lundi: [{ open: "08:30", close: "12:00" }, { open: "14:00", close: "17:30" }],
     mardi: [{ open: "08:30", close: "12:00" }, { open: "14:00", close: "17:30" }],

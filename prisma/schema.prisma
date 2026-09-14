@@ -1,7 +1,8 @@
 // PalpiAuto Commande — schéma Prisma
-// PROD (Vercel) : provider = "postgresql" + DATABASE_URL Postgres (Neon / Supabase / Prisma Postgres).
-// DEV local : si besoin, repassez provider = "sqlite" et DATABASE_URL="file:./dev.db".
-// Les types String/Int/DateTime/Enum utilisés ici sont compatibles Postgres.
+// Vercel impose Postgres. Ici `provider` reste "postgresql" ; la génération du
+// client nécessite juste une DATABASE_URL postgres valide (voir .env.example).
+// DEV local : utilisez une DATABASE_URL postgres locale (ou `prisma db push`
+// vers Neon) — SQLite n'est plus supporté avec ce schéma.
 
 generator client {
   provider = "prisma-client-js"
@@ -53,6 +54,10 @@ model Request {
   customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   vehicleBrand    String
   vehicleModel    String
+  vehicleYear     String        @default("")
+  mileage         String        @default("")
+  fuel            String        @default("")
+  urgency         String        @default("NORMALE")
   plateNumber     String
   partCategory    PartCategory
   partDescription String
@@ -63,6 +68,7 @@ model Request {
   updatedAt       DateTime      @updatedAt
 
   @@index([status])
+  @@index([urgency])
   @@index([createdAt])
   @@index([visitDate])
   @@index([customerId])

@@ -5,8 +5,11 @@ import { getAdSlots } from "@/lib/settings";
 import { getCustomerGroups } from "@/lib/customers";
 import { IdentityForm } from "@/components/admin/IdentityForm";
 import { ContactForm } from "@/components/admin/ContactForm";
-import { BrandingForm } from "@/components/admin/BrandingForm";
+import { LogoForm } from "@/components/admin/LogoForm";
+import { FaviconForm } from "@/components/admin/FaviconForm";
+import { AccentForm } from "@/components/admin/AccentForm";
 import { MessageForm } from "@/components/admin/MessageForm";
+import { RecaptchaForm } from "@/components/admin/RecaptchaForm";
 import { WhatsAppForm } from "@/components/admin/WhatsAppForm";
 import { OpeningHoursForm } from "@/components/admin/OpeningHoursForm";
 import { SmtpForm } from "@/components/admin/SmtpForm";
@@ -37,11 +40,18 @@ export default async function SettingsPage() {
     contact_email: get("contact_email", ""),
     logo_url: get("logo_url", ""),
     favicon_url: get("favicon_url", ""),
+    accent_color: get("accent_color", "#b91c1c"),
     opening_hours: get("opening_hours", ""),
     opening_hours_json: get("opening_hours_json", ""),
     address: get("address", ""),
     custom_message: get("custom_message", ""),
     theme: get("theme", "light"),
+  };
+
+  const recaptchaValues = {
+    recaptcha_site_key: get("recaptcha_site_key", ""),
+    recaptcha_secret_key: get("recaptcha_secret_key", ""),
+    recaptcha_enabled: get("recaptcha_enabled", "false"),
   };
 
   const smtpValues = {
@@ -69,7 +79,8 @@ export default async function SettingsPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight text-white">Paramètres du site</h1>
         <p className="text-sm text-zinc-400">
-          Chaque bloc se règle séparément : identité, coordonnées, logo, message, horaires, SMTP, publicités, clients.
+          Chaque bloc se règle séparément : nom, coordonnées, logo, favicon, couleur,
+          message, anti-robots, WhatsApp, horaires, SMTP, publicités, clients.
         </p>
       </div>
 
@@ -98,19 +109,38 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <section aria-label="Logo et favicon" className="border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="font-bold text-white">3. Logo et favicon</h2>
+      <section aria-label="Logo" className="border border-zinc-800 bg-zinc-900 p-6">
+        <h2 className="font-bold text-white">3. Logo</h2>
         <p className="mb-5 text-sm text-zinc-400">
-          Uploadez le fichier ici, cliquez Enregistrer, puis rechargez /commande : le logo apparaît dans le header
-          et le favicon dans l&apos;onglet du navigateur.
+          Logo affiché dans le header de /commande. Upload puis Enregistrer.
         </p>
         <div className="border border-zinc-200 bg-zinc-50 p-4 sm:p-5">
-          <BrandingForm logoUrl={values.logo_url} faviconUrl={values.favicon_url} />
+          <LogoForm logoUrl={values.logo_url} />
+        </div>
+      </section>
+
+      <section aria-label="Favicon" className="border border-zinc-800 bg-zinc-900 p-6">
+        <h2 className="font-bold text-white">4. Favicon</h2>
+        <p className="mb-5 text-sm text-zinc-400">
+          Icône de l&apos;onglet du navigateur. PNG ou ICO carré, via upload.
+        </p>
+        <div className="border border-zinc-200 bg-zinc-50 p-4 sm:p-5">
+          <FaviconForm faviconUrl={values.favicon_url} />
+        </div>
+      </section>
+
+      <section aria-label="Couleur du site" className="border border-zinc-800 bg-zinc-900 p-6">
+        <h2 className="font-bold text-white">5. Couleur du site</h2>
+        <p className="mb-5 text-sm text-zinc-400">
+          Couleur des boutons et liens de /commande. Rouge garage par défaut.
+        </p>
+        <div className="border border-zinc-200 bg-zinc-50 p-4 sm:p-5">
+          <AccentForm accentColor={values.accent_color} />
         </div>
       </section>
 
       <section aria-label="Message sous le formulaire" className="border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="font-bold text-white">4. Message sous le formulaire</h2>
+        <h2 className="font-bold text-white">6. Message sous le formulaire</h2>
         <p className="mb-5 text-sm text-zinc-400">
           Texte optionnel affiché sous la demande sur /commande. Laissez vide pour ne rien afficher.
         </p>
@@ -119,8 +149,18 @@ export default async function SettingsPage() {
         </div>
       </section>
 
+      <section aria-label="Protection anti-robots" className="border border-zinc-800 bg-zinc-900 p-6">
+        <h2 className="font-bold text-white">7. Protection anti-robots (reCAPTCHA)</h2>
+        <p className="mb-5 text-sm text-zinc-400">
+          Bloque les spams sur le formulaire. Clés gratuites sur google.com/recaptcha/admin (v3 invisible).
+        </p>
+        <div className="border border-zinc-200 bg-zinc-50 p-4 sm:p-5">
+          <RecaptchaForm values={recaptchaValues} />
+        </div>
+      </section>
+
       <section aria-label="WhatsApp et réponse auto IA" className="border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="font-bold text-white">5. WhatsApp et réponse auto (IA)</h2>
+        <h2 className="font-bold text-white">8. WhatsApp et réponse auto (IA)</h2>
         <p className="mb-5 text-sm text-zinc-400">
           Compte test Meta : numéro +1 (555) 181-0387. Le token secret reste dans .env
           (WHATSAPP_API_TOKEN), jamais affiché ici. Webhook : {"{URL_PUBLIQUE}"}/api/webhooks/whatsapp.
@@ -131,7 +171,7 @@ export default async function SettingsPage() {
       </section>
 
       <section aria-label="Horaires du garage" className="border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="font-bold text-white">6. Horaires du garage</h2>
+        <h2 className="font-bold text-white">9. Horaires du garage</h2>
         <p className="mb-5 text-sm text-zinc-400">
           Exemple : lundi 08h-12h puis 13h-17h, jeudi matin 08h-12h puis fermé, dimanche fermé.
         </p>
@@ -141,7 +181,7 @@ export default async function SettingsPage() {
       </section>
 
       <section aria-label="Configuration SMTP" className="border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="font-bold text-white">7. E-mails (SMTP)</h2>
+        <h2 className="font-bold text-white">10. E-mails (SMTP)</h2>
         <p className="mb-5 text-sm text-zinc-400">
           Serveur utilisé pour les notifications e-mail du garage.
         </p>
@@ -151,7 +191,7 @@ export default async function SettingsPage() {
       </section>
 
       <section aria-label="Espaces publicitaires" className="border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="font-bold text-white">8. Espaces publicitaires</h2>
+        <h2 className="font-bold text-white">11. Espaces publicitaires</h2>
         <p className="mb-5 text-sm text-zinc-400">
           Comme sur palpiauto.com/contact : un bandeau haut et une colonne latérale sur ordinateur,
           un encart au milieu de page et un bandeau collé en bas sur mobile.
@@ -163,7 +203,7 @@ export default async function SettingsPage() {
       </section>
 
       <section aria-label="Clients récurrents" className="border border-zinc-800 bg-zinc-900 p-6">
-        <h2 className="font-bold text-white">9. Clients récurrents</h2>
+        <h2 className="font-bold text-white">12. Clients récurrents</h2>
         <p className="mb-5 text-sm text-zinc-400">
           Les demandes faites plusieurs fois avec le même e-mail ou le même téléphone sont regroupées ici.
           {repeatCustomers.length === 0

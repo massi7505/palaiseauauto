@@ -14,8 +14,9 @@ import {
   buildWhatsAppUrl,
   getWhatsAppPhone,
 } from "@/lib/whatsapp";
-import { PART_CATEGORY_LABELS } from "@/lib/validations/order.schema";
+import { PART_CATEGORY_LABELS, FUEL_LABELS } from "@/lib/validations/order.schema";
 import { normalizeEmail, normalizePhone } from "@/lib/customers";
+import { verifyRecaptchaToken } from "@/lib/settings";
 
 export interface SubmitOrderResult {
   ok: boolean;
@@ -44,6 +45,37 @@ export async function submitOrderAction(
 
   const data = parsed.data;
   const categoryLabel = PART_CATEGORY_LABELS[data.partCategory];
+
+  // Anti-robot : vérifié côté serveur uniquement si activé dans /admin/settings.
+  const captcha = await verifyRecaptchaToken(data.recaptchaToken, {
+    minScore: 0.4,
+    expectedAction: "order",
+  });
+  if (!captcha.ok) {
+    return { ok: false, message: captcha.error ?? "Vérification anti-robot échouée." };
+  }
+
+  // Anti-spam : max 3 demandes / heure pour le même e-mail OU téléphone.
+  try {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recent = await prisma.request.count({
+      where: {
+        createdAt: { gte: oneHourAgo },
+        OR: [
+          { customer: { email: { equals: data.email } } },
+          { customer: { phone: { equals: data.phone } } },
+        ],
+      },
+    });
+    if (recent >= 3) {
+      return {
+        ok: false,
+        message: "Vous avez déjà envoyé plusieurs demandes. Réessayez dans une heure ou appelez le garage.",
+      };
+    }
+  } catch {
+    // Si le comptage échoue, on continue (mieux que bloquer un vrai client).
+  }
 
   try {
     // Client récurrent : on regroupe par e-mail normalisé OU téléphone normalisé.
@@ -87,6 +119,10 @@ export async function submitOrderAction(
         customerId: customer.id,
         vehicleBrand: data.vehicleBrand,
         vehicleModel: data.vehicleModel,
+        vehicleYear: data.vehicleYear ?? "",
+        mileage: data.mileage ?? "",
+        fuel: data.fuel ?? "",
+        urgency: data.urgency,
         plateNumber: data.plateNumber,
         partCategory: data.partCategory,
         partDescription: data.partDescription,
@@ -101,6 +137,10 @@ export async function submitOrderAction(
       email: data.email,
       vehicleBrand: data.vehicleBrand,
       vehicleModel: data.vehicleModel,
+      vehicleYear: data.vehicleYear || undefined,
+      mileage: data.mileage || undefined,
+      fuelLabel: data.fuel ? FUEL_LABELS[data.fuel] : undefined,
+      urgent: data.urgency === "URGENTE",
       plateNumber: data.plateNumber,
       partCategoryLabel: categoryLabel,
       partDescription: data.partDescription,
@@ -193,6 +233,10 @@ export async function updateSettingsAction(values: Record<string, string>): Prom
     "smtp_from",
     "smtp_secure",
     "ads_enabled",
+    "accent_color",
+    "recaptcha_site_key",
+    "recaptcha_secret_key",
+    "recaptcha_enabled",
     "whatsapp_phone_id",
     "whatsapp_business_id",
     "whatsapp_mode",
@@ -234,6 +278,9 @@ export async function updateSettingsAction(values: Record<string, string>): Prom
   }
   if (values.whatsapp_phone_id !== undefined && values.whatsapp_phone_id !== "" && !/^[0-9]{5,30}$/.test(values.whatsapp_phone_id.trim())) {
     return { ok: false, error: "Phone Number ID WhatsApp invalide (chiffres uniquement)." };
+  }
+  if (values.accent_color !== undefined && !/^#[0-9a-fA-F]{6}$/.test(values.accent_color.trim())) {
+    return { ok: false, error: "Couleur d'accent invalide (format #rrggbb)." };
   }
   if (values.contact_email !== undefined && values.contact_email.trim() !== "") {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(values.contact_email.trim())) {

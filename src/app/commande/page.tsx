@@ -21,6 +21,9 @@ export default async function CommandePage() {
     settings.opening_hours,
   );
   const customMessage = settings.custom_message;
+  const accentColor = settings.accent_color;
+  // Clé publique reCAPTCHA : base (/admin/settings) puis env (Vercel).
+  const recaptchaSiteKey = (settings.recaptcha_site_key?.trim() || process.env.RECAPTCHA_SITE_KEY || "").trim();
   const brandInitial = (brandName || "P").charAt(0).toUpperCase();
   const blocks = (
     <CommandeBlocks
@@ -31,6 +34,8 @@ export default async function CommandePage() {
       contactEmail={contactEmail}
       openingHoursText={openingHoursText}
       customMessage={customMessage}
+      accentColor={accentColor}
+      recaptchaSiteKey={recaptchaSiteKey}
     />
   );
 

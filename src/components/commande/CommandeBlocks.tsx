@@ -12,8 +12,11 @@ export function CommandeBlocks(p: {
   contactEmail: string;
   openingHoursText: string;
   customMessage: string;
+  accentColor: string;
+  recaptchaSiteKey: string;
 }) {
   const telHref = `tel:${p.garagePhone.replace(/[\s.]/g, "")}`;
+  const accent = /^#[0-9a-fA-F]{6}$/.test(p.accentColor) ? p.accentColor : "#b91c1c";
   return (
     <>
       <div className="mb-5">
@@ -27,7 +30,7 @@ export function CommandeBlocks(p: {
       </div>
       <section aria-label="Formulaire de demande" className="min-w-0 border border-zinc-200 bg-white p-5 sm:p-8">
         <Suspense fallback={<div className="h-40 animate-pulse bg-zinc-100" />}>
-          <OrderForm />
+          <OrderForm recaptchaSiteKey={p.recaptchaSiteKey || undefined} accentColor={accent} />
         </Suspense>
       </section>
 
@@ -40,7 +43,7 @@ export function CommandeBlocks(p: {
       <section aria-label="Coordonnées du garage" className="mt-4 min-w-0 border border-zinc-200 bg-white p-5">
         <h2 className="text-sm font-bold text-zinc-900">Contacter le garage</h2>
         <div className="mt-3 flex flex-wrap items-center gap-2">
-          <a href={telHref} className="rounded-lg bg-zinc-900 px-4 py-2 text-sm font-semibold text-white hover:bg-zinc-700">
+          <a href={telHref} style={{ backgroundColor: accent }} className="rounded-lg px-4 py-2 text-sm font-semibold text-white hover:opacity-90">
             Appeler le {p.garagePhone}
           </a>
           <a href={`https://api.whatsapp.com/send?phone=${p.whatsappPhone}`} target="_blank" rel="noreferrer" className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">

@@ -4,6 +4,12 @@ const DEFAULTS = {
   whatsapp_phone: "33601639959",
   garage_phone: "06 01 63 99 59",
   brand_name: "PalpiAuto",
+  // Couleur d'accent du site (boutons, liens) — hexadécimal, ex : #b91c1c.
+  accent_color: "#b91c1c",
+  // reCAPTCHA v3 (Google) : clés + interrupteur.
+  recaptcha_site_key: "",
+  recaptcha_secret_key: "",
+  recaptcha_enabled: "false",
   opening_hours: "",
   address: "",
   custom_message: "",
@@ -294,6 +300,49 @@ export function parseWebhookMessages(payload: unknown): IncomingWhatsAppMessage[
     // payload inattendu : on ignore
   }
   return out;
+}
+
+/** Vérifie un token reCAPTCHA (v2 ou v3) côté serveur via Google. */
+export async function verifyRecaptchaToken(
+  token: string,
+  opts?: { minScore?: number; expectedAction?: string }
+): Promise<{ ok: boolean; error?: string }> {
+  const s = await getAllSettings();
+  const enabled = s.recaptcha_enabled === "true";
+  // La clé secrète peut venir de la base (/admin/settings) ou de l'env (Vercel).
+  const secret = (s.recaptcha_secret_key ?? "").trim() || (process.env.RECAPTCHA_SECRET_KEY ?? "").trim();
+  // Si le captcha est désactivé ou non configuré, on laisse passer (mode dev).
+  if (!enabled || !secret) return { ok: true };
+  if (!token) return { ok: false, error: "Vérification anti-robot manquante, veuillez réessayer." };
+  try {
+    const res = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret, response: token }).toString(),
+    });
+    const data = (await res.json().catch(() => null)) as {
+      success?: boolean;
+      score?: number;
+      action?: string;
+      hostname?: string;
+      ["error-codes"]?: string[];
+    } | null;
+    if (!data?.success) {
+      const codes = (data?.["error-codes"] ?? []).join(", ");
+      return { ok: false, error: `Échec de la vérification anti-robot${codes ? ` (${codes})` : ""}.` };
+    }
+    // reCAPTCHA v3 : on exige un score suffisant + la bonne action si fournis.
+    if (typeof data.score === "number" && data.score < (opts?.minScore ?? 0.4)) {
+      return { ok: false, error: "Activité suspecte détectée, veuillez réessayer." };
+    }
+    if (opts?.expectedAction && data.action && data.action !== opts.expectedAction) {
+      return { ok: false, error: "Vérification anti-robot invalide, veuillez réessayer." };
+    }
+    return { ok: true };
+  } catch {
+    // Google injoignable : on laisse passer pour ne pas bloquer les clients.
+    return { ok: true };
+  }
 }
 
 export interface AdSlotData {

@@ -71,6 +71,19 @@ const plateRegex = /^[A-Z]{2}[-\s]?[0-9]{3}[-\s]?[A-Z]{2}$/;
 // Téléphone FR : 06/07 + 8 chiffres, espaces/points/tirets tolérés
 const phoneRegex = /^(?:(?:\+33|0033)\s?|0)[67](?:[\s.-]?\d{2}){4}$/;
 
+export const fuelEnum = z.enum(["ESSENCE", "DIESEL", "HYBRIDE", "ELECTRIQUE", "GPL", "AUTRE"]);
+
+export type FuelValue = z.infer<typeof fuelEnum>;
+
+export const FUEL_LABELS: Record<FuelValue, string> = {
+  ESSENCE: "Essence",
+  DIESEL: "Diesel",
+  HYBRIDE: "Hybride",
+  ELECTRIQUE: "Électrique",
+  GPL: "GPL",
+  AUTRE: "Autre",
+};
+
 export const orderSchema = z.object({
   lastName: z
     .string()
@@ -115,6 +128,36 @@ export const orderSchema = z.object({
     .trim()
     .min(5, "Décrivez la pièce (5 caractères minimum)")
     .max(1000, "Description trop longue (1000 caractères max)"),
+  // Année du véhicule (optionnel) : 1980 → année en cours + 1.
+  vehicleYear: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => v === undefined || v === "" || (/^[0-9]{4}$/.test(v) && Number(v) >= 1980 && Number(v) <= new Date().getFullYear() + 1),
+      { message: "Année invalide (ex : 2018)" }
+    ),
+  // Kilométrage (optionnel) : chiffres + espaces, max 1 000 000.
+  mileage: z
+    .string()
+    .trim()
+    .optional()
+    .refine(
+      (v) => {
+        if (v === undefined || v === "") return true;
+        const n = Number(v.replace(/[\s.]/g, ""));
+        return Number.isInteger(n) && n >= 0 && n <= 1000000;
+      },
+      { message: "Kilométrage invalide (ex : 120000)" }
+    ),
+  // Carburant (optionnel) : liste fermée.
+  fuel: fuelEnum.optional(),
+  // Urgence (optionnel) : le garage peut trier les demandes pressées.
+  urgency: z.enum(["NORMALE", "URGENTE"]).default("NORMALE"),
+  // Consentement RGPD : booléen, doit être true (validé côté serveur).
+  consent: z.boolean().refine((v) => v === true, { message: "Vous devez accepter l'utilisation de vos données." }),
+  // Token reCAPTCHA (v2 ou v3) — vérifié côté serveur si activé.
+  recaptchaToken: z.string().default(""),
 });
 
 export type OrderFormValues = z.infer<typeof orderSchema>;

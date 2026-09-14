@@ -35,17 +35,17 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-zinc-950 text-zinc-200">
       <header className="sticky top-0 z-30 border-b border-zinc-800 bg-zinc-950">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-          <Link href="/admin" className="flex items-center gap-2.5">
+        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <Link href="/admin" className="flex min-w-0 items-center gap-2.5">
             <span
               aria-hidden
-              className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-600 text-lg font-black text-white"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-red-700 text-sm font-black text-white"
             >
               P
             </span>
             <span className="leading-tight">
-              <span className="block text-base font-extrabold tracking-tight text-white">PalpiAuto</span>
-              <span className="block text-xs text-zinc-500">Garage — Admin</span>
+              <span className="block text-sm font-extrabold tracking-tight text-white">PalpiAuto</span>
+              <span className="block text-[11px] text-zinc-500">Garage — Admin</span>
             </span>
           </Link>
 
@@ -61,8 +61,8 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
 
-          <div className="flex items-center gap-3">
-            <span className="hidden max-w-44 truncate text-sm text-zinc-400 lg:block">
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="hidden max-w-44 truncate text-xs text-zinc-400 lg:block">
               {session.user.email}
             </span>
             <Link
@@ -78,7 +78,7 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
 
         <div className="border-t border-zinc-800 md:hidden">
-          <nav aria-label="Administration mobile" className="mx-auto flex h-12 max-w-6xl items-center justify-start gap-1 overflow-x-auto px-3">
+          <nav aria-label="Administration mobile" className="mx-auto flex h-11 max-w-6xl items-center justify-start gap-1 overflow-x-auto px-3">
             {NAV.map((item) => (
               <Link
                 key={item.href}
@@ -92,12 +92,12 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:px-8">
         {children}
       </main>
 
       <footer className="border-t border-zinc-800">
-        <div className="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-zinc-500 sm:px-6">
+        <div className="mx-auto max-w-6xl px-4 py-3 text-center text-xs text-zinc-500 sm:px-6">
           PalpiAuto — Administration
         </div>
       </footer>
