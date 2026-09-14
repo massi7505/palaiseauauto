@@ -67,9 +67,7 @@ export function OrderForm({ recaptchaSiteKey, accentColor }: { recaptchaSiteKey?
     defaultValues: {
       lastName: "", firstName: "", email: "", phone: "",
       vehicleBrand: "", vehicleModel: "", plateNumber: "",
-      vehicleYear: "", mileage: "",
       fuel: undefined,
-      urgency: "NORMALE",
       partCategory: undefined,
       partDescription: "",
       consent: false,
@@ -191,7 +189,7 @@ export function OrderForm({ recaptchaSiteKey, accentColor }: { recaptchaSiteKey?
             <input {...register("vehicleModel")} placeholder="Clio 4, 208, Golf 7…" aria-label="Modèle du véhicule" className={cn(inputClass, errors.vehicleModel && "border-red-500")} />
           </TextFieldWrapper>
         </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <TextFieldWrapper label="Immatriculation" error={errors.plateNumber?.message} name="plateNumber">
             <input
               {...register("plateNumber")}
@@ -204,38 +202,6 @@ export function OrderForm({ recaptchaSiteKey, accentColor }: { recaptchaSiteKey?
               className={cn(inputClass, "font-mono font-semibold tracking-wider uppercase", errors.plateNumber && "border-red-500")}
             />
           </TextFieldWrapper>
-          <div className="flex w-full flex-col gap-1.5">
-            <label htmlFor="vehicleYear" className="px-1 text-sm font-semibold text-zinc-700">
-              Année <span className="font-normal text-zinc-400">(optionnel)</span>
-            </label>
-            <input
-              id="vehicleYear"
-              {...register("vehicleYear")}
-              placeholder="2018"
-              inputMode="numeric"
-              autoComplete="off"
-              aria-label="Année du véhicule"
-              className={cn(inputClass, errors.vehicleYear && "border-red-500")}
-            />
-            {errors.vehicleYear?.message ? <p className="px-1 text-xs font-medium text-red-600">{errors.vehicleYear.message}</p> : null}
-          </div>
-          <div className="flex w-full flex-col gap-1.5">
-            <label htmlFor="mileage" className="px-1 text-sm font-semibold text-zinc-700">
-              Kilométrage <span className="font-normal text-zinc-400">(optionnel)</span>
-            </label>
-            <input
-              id="mileage"
-              {...register("mileage")}
-              placeholder="120000"
-              inputMode="numeric"
-              autoComplete="off"
-              aria-label="Kilométrage"
-              className={cn(inputClass, errors.mileage && "border-red-500")}
-            />
-            {errors.mileage?.message ? <p className="px-1 text-xs font-medium text-red-600">{errors.mileage.message}</p> : null}
-          </div>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="flex w-full flex-col gap-1.5">
             <label htmlFor="fuel" className="px-1 text-sm font-semibold text-zinc-700">
               Carburant <span className="font-normal text-zinc-400">(optionnel)</span>
@@ -253,32 +219,6 @@ export function OrderForm({ recaptchaSiteKey, accentColor }: { recaptchaSiteKey?
                   <option key={f} value={f}>{FUEL_LABELS[f]}</option>
                 ))}
               </select>
-            )} />
-          </div>
-          <div className="flex w-full flex-col gap-1.5">
-            <span className="px-1 text-sm font-semibold text-zinc-700">Urgence</span>
-            <Controller control={control} name="urgency" render={({ field }) => (
-              <div className="flex gap-2" role="radiogroup" aria-label="Urgence de la demande">
-                {(["NORMALE", "URGENTE"] as const).map((u) => (
-                  <button
-                    key={u}
-                    type="button"
-                    role="radio"
-                    aria-checked={field.value === u}
-                    onClick={() => field.onChange(u)}
-                    className={cn(
-                      "flex-1 rounded-lg border px-3 py-2.5 text-sm font-semibold transition",
-                      field.value === u
-                        ? u === "URGENTE"
-                          ? "border-red-600 bg-red-50 text-red-700"
-                          : "border-zinc-900 bg-zinc-900 text-white"
-                        : "border-zinc-300 bg-white text-zinc-600 hover:border-zinc-400"
-                    )}
-                  >
-                    {u === "URGENTE" ? "Urgente — véhicule immobilisé" : "Normale"}
-                  </button>
-                ))}
-              </div>
             )} />
           </div>
         </div>

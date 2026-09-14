@@ -13,10 +13,7 @@ export interface WhatsAppOrderMessage {
   email: string;
   vehicleBrand: string;
   vehicleModel: string;
-  vehicleYear?: string;
-  mileage?: string;
   fuelLabel?: string;
-  urgent?: boolean;
   plateNumber: string;
   partCategoryLabel: string;
   partDescription: string;
@@ -24,12 +21,11 @@ export interface WhatsAppOrderMessage {
 
 export function buildWhatsAppMessage(data: WhatsAppOrderMessage): string {
   const lines = [
-    `Nouvelle demande de pièce auto${data.urgent ? " [URGENTE]" : ""}`,
+    "Nouvelle demande de pièce auto",
     `Nom : ${data.lastName} ${data.firstName}`,
     `Téléphone : ${data.phone}`,
     `Email : ${data.email}`,
-    `Véhicule : ${data.vehicleBrand} ${data.vehicleModel}${data.vehicleYear ? ` (${data.vehicleYear})` : ""}`,
-    data.mileage ? `Kilométrage : ${data.mileage} km` : null,
+    `Véhicule : ${data.vehicleBrand} ${data.vehicleModel}`,
     data.fuelLabel ? `Carburant : ${data.fuelLabel}` : null,
     `Immatriculation : ${data.plateNumber}`,
     `Catégorie : ${data.partCategoryLabel}`,

@@ -54,10 +54,7 @@ model Request {
   customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   vehicleBrand    String
   vehicleModel    String
-  vehicleYear     String        @default("")
-  mileage         String        @default("")
   fuel            String        @default("")
-  urgency         String        @default("NORMALE")
   plateNumber     String
   partCategory    PartCategory
   partDescription String
@@ -68,7 +65,6 @@ model Request {
   updatedAt       DateTime      @updatedAt
 
   @@index([status])
-  @@index([urgency])
   @@index([createdAt])
   @@index([visitDate])
   @@index([customerId])
