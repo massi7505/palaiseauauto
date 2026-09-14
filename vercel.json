@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "prisma generate && prisma db push && next build",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["cdg1"],
+  "functions": {
+    "src/app/api/webhooks/whatsapp/route.ts": { "maxDuration": 30 },
+    "src/app/api/whatsapp/test/route.ts": { "maxDuration": 30 }
+  }
+}

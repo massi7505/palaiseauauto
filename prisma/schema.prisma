@@ -1,0 +1,108 @@
+// PalpiAuto Commande — schéma Prisma
+// PROD (Vercel) : provider = "postgresql" + DATABASE_URL Postgres (Neon / Supabase / Prisma Postgres).
+// DEV local : si besoin, repassez provider = "sqlite" et DATABASE_URL="file:./dev.db".
+// Les types String/Int/DateTime/Enum utilisés ici sont compatibles Postgres.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        String    @id @default(cuid())
+  firstName String
+  lastName  String
+  email     String
+  phone     String
+  createdAt DateTime  @default(now())
+  requests  Request[]
+
+  @@index([email])
+  @@index([phone])
+  @@map("customers")
+}
+
+enum PartCategory {
+  MOTEUR
+  CARROSSERIE
+  FREINAGE
+  ELECTRONIQUE
+  VITRAGE
+  SUSPENSION
+  ECHAPPEMENT
+  TRANSMISSION
+  INTERIEUR
+  ECLAIRAGE
+  AUTRE
+}
+
+enum RequestStatus {
+  NOUVEAU
+  EN_COURS
+  TRAITE
+  ANNULE
+}
+
+model Request {
+  id              String        @id @default(cuid())
+  customerId      String
+  customer        Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicleBrand    String
+  vehicleModel    String
+  plateNumber     String
+  partCategory    PartCategory
+  partDescription String
+  status          RequestStatus @default(NOUVEAU)
+  internalNote    String        @default("")
+  visitDate       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([visitDate])
+  @@index([customerId])
+  @@map("requests")
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String // hash bcrypt
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+
+  @@map("admin_users")
+}
+
+model Setting {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("settings")
+}
+
+// Un emplacement publicitaire gérable depuis /admin/settings.
+// slot : "leaderboard_top" (desktop, sous le header /commande)
+//      | "sidebar_right"  (desktop, colonne latérale /commande)
+//      | "in_feed"        (desktop + mobile, entre formulaire et contact)
+//      | "mobile_sticky"  (mobile uniquement, bandeau collé en bas)
+model AdSlot {
+  id        String   @id @default(cuid())
+  slot      String   @unique
+  title     String   @default("")
+  imageUrl  String   @default("")
+  linkUrl   String   @default("")
+  enabled   Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+
+  @@map("ad_slots")
+}
+
